@@ -66,16 +66,7 @@ import static org.onosproject.net.intent.IntentState.WITHDRAWN;
 import static com.google.common.collect.Lists.newArrayList;
 
 
-import org.apache.karaf.shell.commands.Command;
-import org.onosproject.cli.AbstractShellCommand;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import org.apache.karaf.shell.commands.Argument;
-import org.apache.karaf.shell.commands.Command;
-import org.apache.karaf.shell.commands.Option;
 
 
 import org.onosproject.cli.AbstractChoicesCompleter;
@@ -169,6 +160,9 @@ public class AppCommand extends AbstractShellCommand {
 
 	@Argument(name = "cmd", description = "command")
     String cmd = null;
+
+  	@Argument(index = 1, name = "param...", required = false, multiValued = true, description = "param(s) required by commands")
+  	private List<String> paramList = new ArrayList<>();
 
 
     @Override
