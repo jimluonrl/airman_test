@@ -158,7 +158,7 @@ public class AppCommand extends AbstractShellCommand {
 	public static final String CMD_HELP = "help";
 
 
-	@Argument(name = "cmd", description = "command: {flood_flow_table numFlows [switchIndex - omit]")
+	@Argument(name = "cmd", description = "command: {flood_flow_table numFlows [switchIndex - omit to flood all]}")
     String cmd = "";
 
   	@Argument(index = 1, name = "param...", required = false, multiValued = true, description = "param(s) required by commands, see above")
