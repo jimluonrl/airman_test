@@ -158,16 +158,15 @@ public class AppCommand extends AbstractShellCommand {
 	public static final String CMD_HELP = "help";
 
 
-	@Argument(name = "cmd", description = "command")
-    String cmd = null;
+	@Argument(name = "cmd", description = "command: {flood_flow_table numFlows [switchIndex - omit]")
+    String cmd = "";
 
-  	@Argument(index = 1, name = "param...", required = false, multiValued = true, description = "param(s) required by commands")
+  	@Argument(index = 1, name = "param...", required = false, multiValued = true, description = "param(s) required by commands, see above")
   	private List<String> paramList = new ArrayList<>();
 
 
     @Override
     protected void doExecute() {
-      
         
 		switch (cmd) {
       		case CMD_FLOOD_FLOW_TABLE: {
