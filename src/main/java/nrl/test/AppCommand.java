@@ -222,7 +222,7 @@ public class AppCommand extends AbstractShellCommand {
 
 		int currSwitchIndex = 0;
         for (Device d : devices) {
-        	if (currDeviceIndex == switchIndex || switchIndex == -1) {
+        	if (currSwitchIndex == switchIndex || switchIndex == -1) {
 		        for (long i = 0; i < flowsPerDevice; i++) {
 		            sbuilder = DefaultTrafficSelector.builder();
 
@@ -255,6 +255,7 @@ public class AppCommand extends AbstractShellCommand {
 
 		        }
 			}
+			currSwitchIndex++;
         }
         // close stages
         rules.newStage();
