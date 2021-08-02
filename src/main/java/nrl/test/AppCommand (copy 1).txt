@@ -149,7 +149,7 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 @Service
 @Command(scope = "onos", name = "airman_test",
-         description = "Airman test attacks")
+         description = "Sample Apache Karaf CLI command")
 public class AppCommand extends AbstractShellCommand {
 
  	public static final String CMD_FLOOD_FLOW_TABLE = "flood_flow_table";
@@ -168,11 +168,15 @@ public class AppCommand extends AbstractShellCommand {
     @Override
     protected void doExecute() {
       
+        print("Hello %s", "World " + cmd);
         
+    	cmd = Optional.ofNullable(cmd).orElse("Error");
+
 		switch (cmd) {
       		case CMD_FLOOD_FLOW_TABLE: {
 				print("flood flow table: " + attackFloodFlowTable());
-						
+				
+				
 
         		break;
       		}
@@ -190,20 +194,12 @@ public class AppCommand extends AbstractShellCommand {
     private CountDownLatch latch;
 	private String attackFloodFlowTable() {
 	    int MAX_OUT_PORT = 254;
-	    
-		int flowsPerDevice = 0;
-		int switchIndex = -1;
+		if (paramList.size() != 2) {
+			return "usage: switchIndex numFlows";
+		}
 
-		if (paramList.size() == 1) {
-			flowsPerDevice = Integer.parseInt(paramList.get(0));
-		}
-		else if (paramList.size() == 2) {
-			flowsPerDevice = Integer.parseInt(paramList.get(0));
-		 	num = Integer.parseInt(paramList.get(1));
-		}
-		else {
-			return "usage: numFlows [switchIndex]";
-		}
+		int flowsPerDevice = Integer.parseInt(paramList.get(0));
+		int num = Integer.parseInt(paramList.get(1));
 
 		FlowRuleService flowService = get(FlowRuleService.class);
         DeviceService deviceService = get(DeviceService.class);
@@ -220,71 +216,107 @@ public class AppCommand extends AbstractShellCommand {
         FlowRuleOperations.Builder rules = FlowRuleOperations.builder();
         FlowRuleOperations.Builder remove = FlowRuleOperations.builder();
 
-		int currSwitchIndex = 0;
         for (Device d : devices) {
-        	if (currDeviceIndex == switchIndex || switchIndex == -1) {
-		        for (long i = 0; i < flowsPerDevice; i++) {
-		            sbuilder = DefaultTrafficSelector.builder();
+            for (long i = 0; i < flowsPerDevice; i++) {
+                sbuilder = DefaultTrafficSelector.builder();
 
-		            sbuilder.matchEthSrc(MacAddress.valueOf(RandomUtils.nextInt() * i))
-		                    .matchEthDst(MacAddress.valueOf((Integer.MAX_VALUE - i) * RandomUtils.nextInt()));
+                sbuilder.matchEthSrc(MacAddress.valueOf(RandomUtils.nextInt() * i))
+                        .matchEthDst(MacAddress.valueOf((Integer.MAX_VALUE - i) * RandomUtils.nextInt()));
 
 
-		            int randomPriority = RandomUtils.nextInt(
-		                    FlowRule.MAX_PRIORITY - FlowRule.MIN_PRIORITY + 1) + FlowRule.MIN_PRIORITY;
+                int randomPriority = RandomUtils.nextInt(
+                        FlowRule.MAX_PRIORITY - FlowRule.MIN_PRIORITY + 1) + FlowRule.MIN_PRIORITY;
 
-		            FlowRule addRule = DefaultFlowRule.builder()
-		                    .forDevice(d.id())
-		                    .withSelector(sbuilder.build())
-		                    .withTreatment(treatment)
-		                    .withPriority(randomPriority)
-		                    .fromApp(appId)
-		                    .makeTemporary(10)
-		                    .build();
-		            FlowRule removeRule = DefaultFlowRule.builder()
-		                    .forDevice(d.id())
-		                    .withSelector(sbuilder.build())
-		                    .withTreatment(treatment)
-		                    .withPriority(randomPriority)
-		                    .fromApp(appId)
-		                    .makeTemporary(10)
-		                    .build();
+                FlowRule addRule = DefaultFlowRule.builder()
+                        .forDevice(d.id())
+                        .withSelector(sbuilder.build())
+                        .withTreatment(treatment)
+                        .withPriority(randomPriority)
+                        .fromApp(appId)
+                        .makeTemporary(10)
+                        .build();
+                FlowRule removeRule = DefaultFlowRule.builder()
+                        .forDevice(d.id())
+                        .withSelector(sbuilder.build())
+                        .withTreatment(treatment)
+                        .withPriority(randomPriority)
+                        .fromApp(appId)
+                        .makeTemporary(10)
+                        .build();
 
-		            rules.add(addRule);
-		            
+                rules.add(addRule);
+                //remove.remove(removeRule);
 
-		        }
-			}
+            }
         }
         // close stages
         rules.newStage();
+        remove.newStage();
 
-        latch = new CountDownLatch(2);
-        final CountDownLatch addSuccess = new CountDownLatch(1);
-        printProgress("..batch add request");
-        Stopwatch add = Stopwatch.createStarted();
+        for (int i = 0; i < num; i++) {
+            printProgress("Run %d:", i);
+            latch = new CountDownLatch(2);
+            final CountDownLatch addSuccess = new CountDownLatch(1);
+            printProgress("..batch add request");
+            Stopwatch add = Stopwatch.createStarted();
 
-        flowService.apply(rules.build(new FlowRuleOperationsContext() {
+            flowService.apply(rules.build(new FlowRuleOperationsContext() {
 
-            private final Stopwatch timer = Stopwatch.createStarted();
+                private final Stopwatch timer = Stopwatch.createStarted();
 
-            @Override
-            public void onSuccess(FlowRuleOperations ops) {
+                @Override
+                public void onSuccess(FlowRuleOperations ops) {
 
-                timer.stop();
-                printProgress("..add success");
-                results.add(timer.elapsed(TimeUnit.MILLISECONDS));
-                if (results.size() == num) {
-                   
-                        printTime(true, results);
-                   
+                    timer.stop();
+                    printProgress("..add success");
+                    results.add(timer.elapsed(TimeUnit.MILLISECONDS));
+                    if (results.size() == num) {
+                       
+                            printTime(true, results);
+                       
+                    }
+                    latch.countDown();
+                    addSuccess.countDown();
                 }
-                latch.countDown();
-                addSuccess.countDown();
+            }));
+
+if (false) {
+
+            try {
+                addSuccess.await();
+                // wait until all flows reaches ADDED state
+                while (!Streams.stream(flowService.getFlowEntriesById(appId))
+                        .allMatch(fr -> fr.state() == FlowEntryState.ADDED)) {
+                    Thread.sleep(100);
+                }
+                add.stop();
+                printProgress("..completed %d ± 100 ms", add.elapsed(TimeUnit.MILLISECONDS));
+            } catch (InterruptedException e1) {
+                printProgress("Interrupted");
+                Thread.currentThread().interrupt();
             }
-        }));
 
+            printProgress("..cleaning up");
+            flowService.apply(remove.build(new FlowRuleOperationsContext() {
+                @Override
+                public void onSuccess(FlowRuleOperations ops) {
+                    latch.countDown();
+                }
+            }));
 
+            try {
+                latch.await();
+                while (!Iterables.isEmpty(flowService.getFlowEntriesById(appId))) {
+                    Thread.sleep(500);
+                }
+            } catch (InterruptedException e) {
+                printProgress("Interrupted.");
+                Thread.currentThread().interrupt();
+            }
+        }
+
+}
+		
 		return "added " + flowsPerDevice + " to switchIndex " + num;
 
 	}

@@ -27,7 +27,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <description>ONOS OSGi bundle archetype</description>
+    <description>Airman demo attack</description>
     <url>http://onosproject.org</url>
 
     <properties>
@@ -35,8 +35,8 @@
         <onos.app.title>Test attacks</onos.app.title>
         <onos.app.origin>NRL</onos.app.origin>
         <onos.app.category>default</onos.app.category>
-        <onos.app.url>http://onosproject.org</onos.app.url>
-        <onos.app.readme>ONOS OSGi bundle archetype.</onos.app.readme>
+        <onos.app.url>http://www.github.com/jimluonrl/airman_test</onos.app.url>
+        <onos.app.readme></onos.app.readme>
     </properties>
 
     <dependencies>
