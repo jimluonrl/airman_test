@@ -282,7 +282,7 @@ public class AppCommand extends AbstractShellCommand {
         }));
 
 
-		return "added " + flowsPerDevice + " to switchIndex " + switchIndex "(-1 means all switches");
+		return "added " + flowsPerDevice + " to switchIndex " + switchIndex + "(-1 means all switches");
 
 	}
 
