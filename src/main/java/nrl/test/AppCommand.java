@@ -199,7 +199,7 @@ public class AppCommand extends AbstractShellCommand {
 		}
 		else if (paramList.size() == 2) {
 			flowsPerDevice = Integer.parseInt(paramList.get(0));
-		 	num = Integer.parseInt(paramList.get(1));
+		 	switchIndex = Integer.parseInt(paramList.get(1));
 		}
 		else {
 			return "usage: numFlows [switchIndex]";
@@ -274,18 +274,15 @@ public class AppCommand extends AbstractShellCommand {
                 timer.stop();
                 printProgress("..add success");
                 results.add(timer.elapsed(TimeUnit.MILLISECONDS));
-                if (results.size() == num) {
-                   
-                        printTime(true, results);
-                   
-                }
+                printTime(true, results);
+                
                 latch.countDown();
                 addSuccess.countDown();
             }
         }));
 
 
-		return "added " + flowsPerDevice + " to switchIndex " + num;
+		return "added " + flowsPerDevice + " to switchIndex " + switchIndex "(-1 means all switches");
 
 	}
 
